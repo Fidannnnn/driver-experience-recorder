@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driving Experience Recorder</title>
+    <link rel="stylesheet" href="styles.css"> 
+    <script>
+        // JSON data for driving experience variables
+        const weatherConditions = [
+            {"idWeather": 1, "weatherCondition": "Sunny"},
+            {"idWeather": 2, "weatherCondition": "Cloudy"},
+            {"idWeather": 3, "weatherCondition": "Rainy"},
+            {"idWeather": 4, "weatherCondition": "Windy"},
+            {"idWeather": 5, "weatherCondition": "Foggy"},
+            {"idWeather": 6, "weatherCondition": "Snowy"}
+        ];
+
+        const timeOfDayConditions = [
+            {"idTimeOfDay": 1, "timeOfDay": "Morning"},
+            {"idTimeOfDay": 2, "timeOfDay": "Afternoon"},
+            {"idTimeOfDay": 3, "timeOfDay": "Evening"},
+            {"idTimeOfDay": 4, "timeOfDay": "Night"}
+        ];
+
+        const trafficConditions = [
+            {"idTraffic": 1, "trafficCondition": "Free"},
+            {"idTraffic": 2, "trafficCondition": "Moderate"},
+            {"idTraffic": 3, "trafficCondition": "Compact"},
+            {"idTraffic": 4, "trafficCondition": "Standstill"}
+        ];
+
+        const surfaceConditions = [
+            {"idSurface": 1, "surfaceCondition": "Dry"},
+            {"idSurface": 2, "surfaceCondition": "Wet"},
+            {"idSurface": 3, "surfaceCondition": "Icy"},
+            {"idSurface": 4, "surfaceCondition": "Snowy"}
+        ];
+
+        const roadTypes = [
+            {"idRoadType": 1, "roadType": "Residential"},
+            {"idRoadType": 2, "roadType": "Highway"},
+            {"idRoadType": 3, "roadType": "Country Road"},
+            {"idRoadType": 4, "roadType": "City Street"},
+            {"idRoadType": 5, "roadType": "Mountain Pass"}
+        ];
+
+        const roadElements = [
+            {"idRoadElement": 1, "element": "Speed Bump"},
+            {"idRoadElement": 2, "element": "Roundabout"},
+            {"idRoadElement": 3, "element": "Pedestrian Crossing"},
+            {"idRoadElement": 4, "element": "Traffic Light"},
+            {"idRoadElement": 5, "element": "Stop Sign"}
+        ];
+
+        const navUsage = [
+            {"idNavUsage": 1, "navUsage": "Used"},
+            {"idNavUsage": 2, "navUsage": "Not Used"}
+        ];
+
+        const roadConditionTypes = [
+            {"idRoadConditionType": 1, "roadConditionType": "Good"},
+            {"idRoadConditionType": 2, "roadConditionType": "Fair"},
+            {"idRoadConditionType": 3, "roadConditionType": "Poor"},
+            {"idRoadConditionType": 4, "roadConditionType": "Under Construction"}
+        ];
+
+        function populateSelect(id, data) {
+            const selectElement = document.getElementById(id);
+
+            // Add the default 'Choose...' option
+            const defaultOption = document.createElement('option');
+            defaultOption.value = "";
+            defaultOption.text = "Choose an option ";
+            defaultOption.disabled = true;
+            defaultOption.selected = true;
+            selectElement.appendChild(defaultOption);
+
+            // loop through each item and create options
+            data.forEach(function(item) {
+                const option = document.createElement('option');
+                option.value = item[Object.keys(item)[1]];
+                option.text = item[Object.keys(item)[1]];
+                selectElement.appendChild(option);
+            });
+        }
+
+        window.onload = function() { // calls this when page loads
+            //document.getElementById('drivingExperienceForm').reset();
+            // populates selects
+            populateSelect("weather", weatherConditions);
+            populateSelect("timeOfDay", timeOfDayConditions);
+            populateSelect("traffic", trafficConditions);
+            populateSelect("surface", surfaceConditions);
+            populateSelect("roadType", roadTypes);
+            populateSelect("roadElement", roadElements);
+            populateSelect("navUsage", navUsage);
+            populateSelect("roadConditionType", roadConditionTypes);
+
+            updateTotalDistance(); // updates km counter
+            setCurrentExperienceNumber(); // updates experience number to next one
+        };
+
+        // increase or decrease the distance value for increment buttons
+        function adjustDistance(amount) {
+            const distanceInput = document.getElementById('kms');
+            let currentDistance = parseInt(distanceInput.value) || 0;
+            currentDistance = Math.max(0, currentDistance + amount); // make sure it stays non-negative
+            distanceInput.value = currentDistance;
+        }
+
+        function resetDistance() {  // reset the distance value for increment button
+            document.getElementById('kms').value = 0;
+        }
+
+        function updateTotalDistance() {
+            const experiences = JSON.parse(localStorage.getItem('drivingExperiences')) || [];
+
+            // calculate total distance traveled
+            const totalDistance = experiences.reduce((sum, experience) => {
+                const kms = parseInt(experience.kms) || 0;
+                return sum + kms;
+            }, 0);
+            if (totalDistance >= 3000) {
+                alert("Congratulations! You have already reached 3000 km!");
+            } 
+            
+            // update the display with the total
+            const totalDistanceDisplay = document.getElementById('totalDistance');
+            totalDistanceDisplay.textContent = `Total Distance Travelled: ${totalDistance} km`;
+        }
+
+        function setCurrentExperienceNumber() { // set the next driving experience number automatically
+            const experiences = JSON.parse(localStorage.getItem('drivingExperiences')) || [];
+            const nextExperienceNumber = experiences.length + 1; // Next experience number
+            document.getElementById('drivingExperience').value = nextExperienceNumber; // Autofill field
+        }
+
+
+        function saveDrivingExperience() { // save data in local storage
+            if (!validateForm()) { 
+                return;  // If validation fails, do not save
+            }
+            // variable for the data from the form
+            const drivingExperience = {
+                id: getNextId(),
+                drivingExperienceNo: document.getElementById('drivingExperience').value,
+                date: document.getElementById('date').value,
+                departureTime: document.getElementById('departureTime').value,
+                arrivalTime: document.getElementById('arrivalTime').value,
+                kms: parseInt(document.getElementById('kms').value),
+                weather: document.getElementById('weather').value,
+                timeOfDay: document.getElementById('timeOfDay').value,
+                traffic: document.getElementById('traffic').value,
+                surface: document.getElementById('surface').value,
+                roadType: document.getElementById('roadType').value,
+                roadElement: document.getElementById('roadElement').value,
+                navUsage: document.getElementById('navUsage').value,
+                roadConditionType: document.getElementById('roadConditionType').value,
+                notes: document.getElementById('notes').value,
+            };
+            
+            
+            // get existing data from local storage
+            let experiences = JSON.parse(localStorage.getItem('drivingExperiences')) || [];
+            experiences.push(drivingExperience); // add new experience
+            localStorage.setItem('drivingExperiences', JSON.stringify(experiences)); // save the new data to local storage
+
+            updateTotalDistance(); // update the total distance
+
+            const totalDistance = experiences.reduce((sum, experience) => { // loops trough experiences
+                                                    // sum keeps track of distances before
+                                                    // and from experience we get new distance
+                const kms = parseInt(experience.kms) || 0; // convert kms to int
+                return sum + kms; // update sum 
+            }, 0); // with initial value of 0
+
+            if (totalDistance >= 3000) {
+                alert("Congratulations! You've reached 3000 km!");
+            } 
+            else {
+                alert('Driving experience saved successfully!');
+                document.getElementById('drivingExperienceForm').reset(); // reset the form
+            }
+
+            drivingExperience.hoursDriven = calculateHoursDriven( // calculates total time driven in each experince
+                drivingExperience.departureTime,
+                drivingExperience.arrivalTime
+            );
+
+            location.reload(); 
+        }
+
+        function getNextId() { // calculate and get the next unique id
+            const experiences = JSON.parse(localStorage.getItem('drivingExperiences')) || [];
+            return experiences.length > 0 ? experiences[experiences.length - 1].id + 1 : 1; 
+            // if no experinece we return 1, if theres experience we return length+1
+        }
+
+        function RedirectToSummary() { // go to summary page
+            window.location.href = 'summary.html';
+        }
+
+        function validateForm() { // validate the form before submission
+            // check if all required fields are filled
+            const requiredFields = ['drivingExperience', 'date', 'departureTime', 'arrivalTime', 'kms', 'weather', 'timeOfDay', 'traffic', 'surface', 'roadType', 'roadElement', 'navUsage', 'roadConditionType'];
+            // if not alerts the user
+            for (let fieldId of requiredFields) {
+                const field = document.getElementById(fieldId);
+                if (!field.value || field.value === "") {  // Check if empty or default option selected
+                    alert(`Please fill in the ${field.name || fieldId.replace(/([A-Z])/g, ' $1').toLowerCase()}.`);
+                    return false;
+                }
+            }
+
+            // check that the distance is a positive number
+            const distanceInput = document.getElementById('kms');
+            if (parseInt(distanceInput.value) <= 0) {
+                alert("Please enter a valid distance (greater than 0).");
+                return false;
+            }
+
+            // ensure the date is not in the future
+            const currentDate = new Date();
+            const selectedDate = new Date(document.getElementById('date').value);
+            if (selectedDate > currentDate) {
+                alert("The date cannot be in the future.");
+                return false;
+            }
+
+            // ensure the arrival and departure times are valid
+            const departureTime = document.getElementById('departureTime').value;
+            const arrivalTime = document.getElementById('arrivalTime').value;
+            if (departureTime >= arrivalTime) {
+                alert("The arrival time must be later than the departure time.");
+                return false;
+            }
+            return true;  // If all checks pass, return true to allow form submission
+        }
+
+        function calculateHoursDriven(departureTime, arrivalTime) {
+            const [depHours, depMinutes] = departureTime.split(':').map(Number);
+            const [arrHours, arrMinutes] = arrivalTime.split(':').map(Number);
+
+            const departure = new Date(0, 0, 0, depHours, depMinutes);
+            const arrival = new Date(0, 0, 0, arrHours, arrMinutes);
+
+            const diffMs = arrival - departure;
+            const diffHours = diffMs / (1000 * 60 * 60); // convert ms to hours
+
+            return diffHours.toFixed(2); // return hours rounded to 2 decimal places
+        }
+
+    </script>
+</head>
+<body>
+    <header>
+        <h1>Driving Experience Recorder</h1>
+        <img src="pngwing.com (6).png" alt="paris picture">
+    </header>
+    <main>
+        <form id="drivingExperienceForm" action="" method="post">
+            <div class="form-group">
+                <label for="drivingExperience">Driving Experience No:</label>
+                <input type="number" id="drivingExperience" name="drivingExperience" min="0" required>
+            </div>
+            <div class="form-group">
+                <label for="date">Date:</label>
+                <input type="date" id="date" name="date" required>
+            </div>
+            <div class="form-group">
+                <label for="departureTime">Departure Time:</label>
+                <input type="time" id="departureTime" name="departureTime" required>
+            </div>
+            <div class="form-group">
+                <label for="arrivalTime">Arrival Time:</label>
+                <input type="time" id="arrivalTime" name="arrivalTime" required>
+            </div>
+            <div class="form-group">
+                <label for="kms">Distance (km):</label>
+                <input type="number" id="kms" name="kms" min="0" required>
+                <div class="distance-controls">
+                    <button type="button" onclick="adjustDistance(100)">+100</button>
+                    <button type="button" onclick="adjustDistance(10)">+10</button>
+                    <button type="button" onclick="adjustDistance(1)">+1</button>
+                    <button type="button" onclick="resetDistance()">Reset</button>
+                    <button type="button" onclick="adjustDistance(-1)">-1</button>
+                    <button type="button" onclick="adjustDistance(-10)">-10</button>
+                    <button type="button" onclick="adjustDistance(-100)">-100</button>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="weather">Weather:</label>
+                <select id="weather" name="idWeather" required>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="idTimeOfDay">Time of Day:</label>
+                <select id="timeOfDay" name="idTimeOfDay" required>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="idTraffic">Traffic Condition:</label>
+                <select id="traffic" name="idTraffic" required>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="idSurface">Surface Condition:</label>
+                <select id="surface" name="idSurface" required>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="idRoadType">Road Type:</label>
+                <select id="roadType" name="idRoadType" required>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="idRoadElement">Road Element:</label>
+                <select id="roadElement" name="idRoadElement" required>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="idNavUsage">Navigation Usage:</label>
+                <select id="navUsage" name="idNavUsage" required>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="idRoadConditionType">Road Condition:</label>
+                <select id="roadConditionType" name="idRoadConditionType" required>
+                </select>
+            </div>
+            <label for="notes">Notes:</label>
+            <textarea id="notes" name="notes"></textarea><br><br>
+            <button type="button" onclick="saveDrivingExperience()">Submit Experience</button>
+            
+
+            <button type="button" onclick="RedirectToSummary()">View Summary</button>
+        </form>
+        <p id="totalDistance">Total Distance Travelled: 0 km</p>
+    </main>
+    <footer>
+        <img src="IMG_7250.PNG" alt="car picture">
+        <p>&copy; FidanAlizada.</p>
+    </footer>
+</body>
+
+</html>

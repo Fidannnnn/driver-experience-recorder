@@ -1,0 +1,191 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Helvetica Neue', sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #fff4e4;
+    background-attachment: fixed;
+    color: #2b2d42;
+    display: flex;
+    flex-direction: row; 
+    align-items: flex-start;
+    justify-content: center; 
+    min-height: 100vh;
+    line-height: 1.6;
+    flex-wrap: wrap;
+
+}
+
+h1 {
+    text-align: center;
+    color: #2b2d42;
+    font-size: 3rem;
+    margin-top: 20px;
+    animation: fadeIn 2s ease-in-out;
+}
+
+h2 {
+    color: #2b2d42;
+    font-size: 2rem;
+    margin-top: 30px;
+    margin-bottom: 30px;
+    animation: fadeIn 2s ease-in-out;
+    text-align: center !important;
+    border-bottom: 3px solid #c98686;
+    padding-bottom: 10px;
+    flex-grow: 0;
+}
+/* New styles for centering h2 in the flex row */
+.header-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    flex-direction: column;
+}
+
+#summary {
+    display: flex;
+    flex-direction: row; 
+    justify-content: center;
+    margin: 20px;
+    width: 100%;
+    flex-wrap: wrap; 
+}
+
+#summary ul {
+    list-style: none;
+    padding: 0;
+    margin: 20px 0;
+    width: 25%; 
+    margin-right: 15px;
+}
+
+#summary li {
+    margin-bottom: 15px;
+    padding: 20px;
+    border: 2px solid #2b2d42;
+    border-radius: 10px;
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    font-size: 1rem;
+    line-height: 1.4;
+}
+
+#summary li strong {
+    color: #c98686;
+    font-size: 1.2rem;
+}
+
+.chart-container {
+    display: flex;
+    flex-direction: row; /* Items will be placed side by side */
+    justify-content: space-between;
+    width: 100%;
+    margin: 20px 0;
+    flex-wrap: wrap;  /* Allow wrapping if necessary */
+}
+
+canvas {
+    width: 45%;  /* Adjust width to make charts fit next to each other */
+    height: auto; 
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    margin-bottom: 20px;  /* Space between canvases */
+}
+.charts {
+    width: 800px !important;
+    height: 800px !important;
+    margin: 10px 0 !important;
+    background: linear-gradient(#fff4e4 0%, #c98686 100%) !important;
+    border-radius: 40px !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+    display: block !important;
+    font-size: 100px !important;
+}
+
+.charts text { 
+    font-size: 100px !important; /* Adjust text size */
+}
+#distanceChart{
+    max-width: 100% !important;
+    margin: 10px 0 !important;
+    background: linear-gradient(#fff4e4 0%, #c98686 100%);
+    border-radius: 40px !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+    display: block !important;
+}
+#hoursChart{
+    max-width: 100% !important;
+    margin: 10px 0 !important;
+    background: linear-gradient(#fff4e4 0%, #c98686 100%);
+    border-radius: 40px !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+    display: block !important;
+}
+
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@media (max-width: 768px) {
+    h1 {
+        font-size: 2rem;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+
+    #summary li {
+        font-size: 0.9rem;
+    }
+}
+
+
+footer {
+    margin-top: 30px;
+    background-color: #2b2d42;
+    color: #fff4e4;
+    width: 100%;
+    padding: 30px 20px;
+    text-align: center;
+    box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+footer button {
+    background-color: #fff4e4;
+    color: #2b2d42;
+    padding: 15px 30px;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s, box-shadow 0.2s;
+    font-size: 1rem;
+    font-weight: bold;
+    position: relative;
+    overflow: hidden;
+    margin-top: 20px;
+}
+
+footer button:hover {
+    background-color: #c98686;
+    color: #fff4e4;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+footer button:active {
+    transform: translateY(1px);
+}

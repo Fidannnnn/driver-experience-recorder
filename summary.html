@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Driving Experience Summary</title>
+    <link rel="stylesheet" href="styles1.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Driving Experience Report</h1>
+    <div id="summary"></div>
+    <div class="header-container">
+        <h2>Data Analysis</h2> 
+    </div>
+
+    <canvas id="weatherChart" class="charts"></canvas>
+    <canvas id="timeOfDayChart" class="charts"></canvas>
+    <canvas id="trafficChart" class="charts"></canvas>
+    <canvas id="surfaceChart" class="charts"></canvas>
+    <canvas id="hoursChart"></canvas>
+    <canvas id="distanceChart" ></canvas>
+
+    <footer>
+        <button onclick="goBackToForm()" >
+            Back to Form
+        </button>
+
+        <button onclick="clearAllExperiences()">
+            Clear All Experiences
+        </button>
+    </footer>
+
+    <script>
+        function goBackToForm() {
+            window.location.href = 'step3.html'; 
+        }
+        function clearAllExperiences() {
+            if (confirm("Are you sure you want to clear all experiences?")) {
+                localStorage.removeItem('drivingExperiences');
+                location.reload();
+            }
+        }
+
+        window.onload = function displaySummary() {
+            const experiences = JSON.parse(localStorage.getItem('drivingExperiences')) || [];
+            const summaryDiv = document.getElementById('summary');
+
+            if (experiences.length === 0) {
+                summaryDiv.innerHTML = "<p>No experiences recorded yet.</p>";
+                return;
+            }
+
+            let summaryHTML = '<ul>';
+            experiences.forEach((exp, index) => {
+                summaryHTML += `
+                    <li>
+                        <strong>Experience ${index + 1}</strong><br>
+                        Date: ${exp.date}<br>
+                        Distance: ${exp.kms} km<br>
+                        Weather: ${exp.weather}<br>
+                        Time of Day: ${exp.timeOfDay}<br>
+                        Traffic: ${exp.traffic}<br>
+                        Surface: ${exp.surface}<br>
+                        Notes: ${exp.notes || 'None'}
+                    </li>`;
+            });
+            summaryHTML += '</ul>';
+            summaryDiv.innerHTML = summaryHTML;
+
+            // Generate analysis charts
+            generateCategoryChart('Weather', experiences, 'weather', 'weatherChart');
+            generateCategoryChart('Time of Day', experiences, 'timeOfDay', 'timeOfDayChart');
+            generateCategoryChart('Traffic Conditions', experiences, 'traffic', 'trafficChart');
+            generateCategoryChart('Surface Conditions', experiences, 'surface', 'surfaceChart');
+            generateDistanceChart(experiences);
+            generateHoursDrivenChart(experiences);
+        };
+        function calculateHoursDriven(departureTime, arrivalTime) {
+            const [depHours, depMinutes] = departureTime.split(':').map(Number);
+            const [arrHours, arrMinutes] = arrivalTime.split(':').map(Number);
+
+            const departure = new Date(0, 0, 0, depHours, depMinutes);
+            const arrival = new Date(0, 0, 0, arrHours, arrMinutes);
+
+            const diffMs = arrival - departure;
+            const diffHours = diffMs / (1000 * 60 * 60); // Convert ms to hours
+
+            return diffHours.toFixed(2); // Return hours rounded to 2 decimal places
+        }
+        function generateCategoryChart(title, experiences, key, canvasId) {
+            const categoryCount = {};
+
+            // Count frequency of categories
+            experiences.forEach(exp => {
+                const value = exp[key];
+                categoryCount[value] = (categoryCount[value] || 0) + 1;
+            });
+
+            const labels = Object.keys(categoryCount);
+            const data = Object.values(categoryCount);
+
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels, 
+                    datasets: [{
+                        label: `${title} Frequency`,
+                        data: data,
+                        backgroundColor: labels.map(() => `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 0.6)`),
+                        borderColor: labels.map(() => 'rgba(0, 0, 0, 0.1)'),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: {
+                                font: {
+                                    size: 50  // Increase legend text size
+                                }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: `${title} Distribution`,
+                            font: {
+                                size: 50  // Increase title text size
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+
+
+        function generateDistanceChart(experiences) {
+            const distances = experiences.map(exp => parseInt(exp.kms) || 0);
+
+            const ctx = document.getElementById('distanceChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: experiences.map((_, index) => `Experience ${index + 1}`),
+                    datasets: [{
+                        label: 'Distance Traveled',
+                        data: distances,
+                        backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        borderWidth: 1,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: {
+                                font: {
+                                    size: 16  // Increase legend font size
+                                }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Distance Traveled Over Time',
+                            font: {
+                                size: 24  // Increase title font size
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                font: {
+                                    size: 14  // Increase y-axis label font size
+                                }
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                font: {
+                                    size: 14  // Increase x-axis label font size
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        function generateHoursDrivenChart(experiences) {
+            const hours = experiences.map(exp => calculateHoursDriven(exp.departureTime, exp.arrivalTime) || 0);
+            const ctx = document.getElementById('hoursChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: experiences.map((_, index) => `Experience ${index + 1}`),
+                    datasets: [{
+                        label: 'Hours Driven',
+                        data: hours,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Hours Driven per Experience',
+                            font: { size: 18 }
+                        }
+                    }
+                }
+            });
+        }
+
+    </script>
+
+</body>
+</html>
