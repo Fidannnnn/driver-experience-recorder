@@ -35,6 +35,3 @@ Include screenshots or a GIF of the interface if you want!
 
 Fidan Alizada
 
-## 📄 License
-
-MIT — Free to use, modify, and share
